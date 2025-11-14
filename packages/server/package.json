@@ -33,6 +33,7 @@
 	},
 	"dependencies": {
 		"dotenv": "^17.2.3",
-		"drizzle-orm": "^0.44.7"
+		"drizzle-orm": "^0.44.7",
+		"hono": "^4.10.5"
 	}
 }
