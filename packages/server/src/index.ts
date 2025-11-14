@@ -15,7 +15,7 @@ const createUserSchema = v.object({
 	displayId: v.string(),
 	name: v.string(),
 	email: v.pipe(v.string(), v.email()),
-	passwordHash: v.string(),
+	password: v.string(),
 });
 
 app.get("/", (c) => c.text("Hono!"));
@@ -44,8 +44,10 @@ app.get("/users/:id", async (c) => {
 });
 
 app.post("/users", vValidator("json", createUserSchema), async (c) => {
-	const { displayId, name, email, passwordHash } = c.req.valid("json");
+	const { displayId, name, email, password } = c.req.valid("json");
 	const db = drizzle(c.env.DB);
+
+	// TODO: passwordのハッシュ化を行う
 
 	try {
 		const result = await db
@@ -55,7 +57,7 @@ app.post("/users", vValidator("json", createUserSchema), async (c) => {
 				displayId,
 				name,
 				email,
-				passwordHash,
+				passwordHash: password,
 				createdAt: new Date(),
 			})
 			.returning();

@@ -10,7 +10,7 @@
             "binding": "DB",
             "database_name": "maxi-q-database",
             "database_id": "151f7d9b-365f-41d7-83ed-0bf4eeef5086",
-            "migrations_dir": "drizzle/migrations"
+            "migrations_dir": "drizzle"
         }
     ]
 }
