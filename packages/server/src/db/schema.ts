@@ -9,3 +9,11 @@ export const users = table("users", {
 	passwordHash: t.text("password_hash").notNull(),
 	createdAt: t.integer("created_at", { mode: "timestamp" }).notNull(),
 });
+
+export const question = table("question", {
+  postId: t.integer("post_id").primaryKey({ autoIncrement: true }),
+  content: t.text("content").notNull(),
+  createdAt: t.text("created_at").default("CURRENT_TIMESTAMP"),
+  updatedAt: t.text("updated_at").default("CURRENT_TIMESTAMP"),
+  solved: t.integer("solved").default(0),
+});

@@ -5,6 +5,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as v from "valibot";
 import { users as usersTable } from "./db/schema";
+import { question as questionTable } from "./db/schema";
 
 export interface Env {
 	DB: D1Database;
@@ -17,6 +18,13 @@ const createUserSchema = v.object({
 	name: v.string(),
 	email: v.pipe(v.string(), v.email()),
 	password: v.string(),
+});
+
+const createQuestionSchema = v.object({
+  content: v.pipe(
+    v.string(),
+    v.minLength(1)
+  ),
 });
 
 app.use("*", cors());
@@ -69,6 +77,28 @@ app.post("/users", vValidator("json", createUserSchema), async (c) => {
 		console.error(e);
 		return c.json({ error: "Failed to create user" }, 500);
 	}
+});
+
+app.post("/ques", vValidator("json", createQuestionSchema), async (c) => {
+  const { content } = c.req.valid("json");
+  const db = drizzle(c.env.DB);
+
+  try {
+    const result = await db
+      .insert(questionTable)
+      .values({
+        content,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        solved: 0,  // デフォルト（未解決）
+      })
+      .returning();
+
+    return c.json(result, 201);
+  } catch (e) {
+    console.error(e);
+    return c.json({ error: "Failed to create question" }, 500);
+  }
 });
 
 export default { fetch: app.fetch };
