@@ -83,10 +83,7 @@ app.post("/ques", vValidator("json", createQuestionSchema), async (c) => {
 		const result = await db
 			.insert(questionTable)
 			.values({
-				content,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString(),
-				solved: 0, // デフォルトで未解決
+				content
 			})
 			.returning();
 

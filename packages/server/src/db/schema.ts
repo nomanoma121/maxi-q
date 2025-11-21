@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import * as t from "drizzle-orm/sqlite-core";
 import { sqliteTable as table } from "drizzle-orm/sqlite-core";
 
@@ -13,7 +14,7 @@ export const users = table("users", {
 export const question = table("question", {
 	postId: t.integer("post_id").primaryKey({ autoIncrement: true }),
 	content: t.text("content").notNull(),
-	createdAt: t.text("created_at").default("CURRENT_TIMESTAMP"),
-	updatedAt: t.text("updated_at").default("CURRENT_TIMESTAMP"),
-	solved: t.integer("solved").default(0),
+	createdAt: t.integer("created_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: t.integer("updated_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+	solved: t.integer("solved").notNull().default(0),
 });
