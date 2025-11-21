@@ -8,12 +8,7 @@ name: CI Check
 on:
   pull_request:
     branches:
-      - main
-#   CDの時
-on:
-  push:
-    branches:
-      - main
+
 
 # ジョブ（実行する一連の作業の定義）
 
@@ -21,13 +16,13 @@ jobs:
   build_and_test:  
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
         # → GitHub上のリポジトリのソースコードを、このCI環境（仮想マシン）にダウンロードします。
         #    このステップを忘れると、次のnpmコマンドでエラーになります。
 
-        - uses: actions/setup-node@v4
+        - uses: actions/setup-node@v6
           with:
-            node-version: '20'
+            node-version: '24'
             cache: 'npm' 
         # → GitHubの仮想マシンに Node.js の指定バージョンをインストールします。
         #    `cache: 'npm'` を指定すると、依存パッケージが自動でキャッシュされ、
