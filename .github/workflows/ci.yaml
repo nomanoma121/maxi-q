@@ -8,7 +8,7 @@ name: CI Check
 on:
   pull_request:
     branches:
-
+    - main
 
 # ジョブ（実行する一連の作業の定義）
 
