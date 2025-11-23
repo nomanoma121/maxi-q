@@ -10,9 +10,9 @@ users {
         TEXT created_at "作成日時"
     }
 
-ques {
-    INTEGER que_id PK "質問ID"
-    INTEGER author_id FK "投稿者のユーザーID(FK -> users.user_id)"
+questions {
+    TEXT id PK "質問ID"
+    TEXT author_id FK "投稿者のユーザーID(FK -> users.user_id)"
     TEXT content "内容"
     TEXT created_at "投稿日時"
     TEXT updated_at "更新日時"
@@ -22,15 +22,15 @@ ques {
 }
 
 answers {
-    INTEGER answer_id PK "回答ID"
-    INTEGER post_id FK "回答対象の質問ID(FK -> ques.que_id)"
-    INTEGER respondent_id FK "回答者のユーザーID(FK -> users.user_id)"
+    TEXT answer_id PK "回答ID"
+    TEXT post_id FK "回答対象の質問ID(FK -> questions.que_id)"
+    TEXT respondent_id FK "回答者のユーザーID(FK -> users.user_id)"
     TEXT content "内容"
     TEXT answered_at "回答日時"
     TEXT updated_at "更新日時"
 }
 
-users ||--o{ ques : "asks"
+users ||--o{ questions : "asks"
 users ||--o{ answers : "answers"
-ques ||--o{ answers : "has"
+questions ||--o{ answers : "has"
 ```
