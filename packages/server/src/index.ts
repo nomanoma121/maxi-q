@@ -87,6 +87,8 @@ app.post("/questions", vValidator("json", createQuestionSchema), async (c) => {
 				id: crypto.randomUUID(),
 				title,
 				content,
+				createdAt: new Date(),
+  				updatedAt: new Date(),
 			})
 			.returning();
 

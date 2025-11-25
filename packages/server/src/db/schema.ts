@@ -1,7 +1,6 @@
 import { sql } from "drizzle-orm";
 import * as t from "drizzle-orm/sqlite-core";
 import { sqliteTable as table } from "drizzle-orm/sqlite-core";
-import { title } from "valibot";
 
 export const users = table("users", {
 	id: t.text().primaryKey(),
