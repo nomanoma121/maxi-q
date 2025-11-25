@@ -1,0 +1,37 @@
+# ワークフロー名（GitHub上に表示されるタイトル）
+
+name: CI Check
+
+# トリガー条件（いつ実行されるか）
+#  CIの時 or CDの時 どちらか片方を書く
+#   CIの時
+on:
+  pull_request:
+    branches:
+    - main
+
+# ジョブ（実行する一連の作業の定義）
+
+jobs:
+  build_and_test:  
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v5
+        # → GitHub上のリポジトリのソースコードを、このCI環境（仮想マシン）にダウンロードします。
+        #    このステップを忘れると、次のnpmコマンドでエラーになります。
+
+        - uses: actions/setup-node@v6
+          with:
+            node-version: '24'
+            cache: 'npm' 
+        # → GitHubの仮想マシンに Node.js の指定バージョンをインストールします。
+        #    `cache: 'npm'` を指定すると、依存パッケージが自動でキャッシュされ、
+        #    次回のCI実行が速くなります。
+
+        - run: npm ci
+        # → `npm install` の代わりに `npm ci` を使うことで、
+        #    `package-lock.json` に完全に一致する依存関係をクリーンにインストールします。
+        #    CI環境では常にこれを使うのが推奨です（再現性が高い）。
+
+        - run: npm run check
+        #   チェックしたい内容を書いていく
