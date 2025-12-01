@@ -1,5 +1,5 @@
-import { hash } from "bcryptjs";
 import { vValidator } from "@hono/valibot-validator";
+import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
@@ -26,7 +26,15 @@ app.get("/", (c) => c.text("Hono!"));
 
 app.get("/users", async (c) => {
 	const db = drizzle(c.env.DB);
-	const users = await db.select().from(usersTable).all();
+	const users = await db
+		.select({
+			id: usersTable.id,
+			displayId: usersTable.displayId,
+			name: usersTable.name,
+			createdAt: usersTable.createdAt,
+		})
+		.from(usersTable)
+		.all();
 	return c.json(users);
 });
 
@@ -36,7 +44,12 @@ app.get("/users/:id", async (c) => {
 
 	try {
 		const user = await db
-			.select()
+			.select({
+				id: usersTable.id,
+				displayId: usersTable.displayId,
+				name: usersTable.name,
+				createdAt: usersTable.createdAt,
+			})
 			.from(usersTable)
 			.where(eq(usersTable.id, id))
 			.get();
@@ -54,7 +67,7 @@ app.post("/api/register", vValidator("json", createUserSchema), async (c) => {
 	// TODO: passwordのハッシュ化を行う
 	try {
 		const hashedPassword = await hash(password, 10);
-		
+
 		const result = await db
 			.insert(usersTable)
 			.values({
