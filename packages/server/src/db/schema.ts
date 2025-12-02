@@ -25,3 +25,20 @@ export const questions = table("questions", {
 		.default(sql`CURRENT_TIMESTAMP`),
 	solved: t.integer("solved").notNull().default(0),
 });
+
+export const answers = table("answers", {
+	id: t.text("answer_id").primaryKey(),
+	questionId: t
+		.text("question_id")
+		.notNull()
+		.references(() => questions.id),
+	content: t.text("content").notNull(),
+	answeredAt: t
+		.integer("answered_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: t
+		.integer("updated_at", { mode: "timestamp" })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+});

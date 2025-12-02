@@ -6,8 +6,12 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { sign } from "hono/jwt";
 import * as v from "valibot";
-import { questions as questionsTable, users as usersTable } from "./db/schema";
 import { authMiddleware } from "./middlewares/auth";
+import {
+	answers as answersTable,
+	questions as questionsTable,
+	users as usersTable,
+} from "./db/schema";
 
 export interface Env {
 	DB: D1Database;
@@ -33,13 +37,25 @@ const createQuestionSchema = v.object({
 	content: v.pipe(v.string(), v.minLength(1), v.maxLength(5000)),
 });
 
+const createAnswerSchema = v.object({
+	content: v.pipe(v.string(), v.minLength(1), v.maxLength(5000)),
+});
+
 app.use("*", cors());
 
 app.get("/", (c) => c.text("Hono!"));
 
 app.get("/users", async (c) => {
 	const db = drizzle(c.env.DB);
-	const users = await db.select().from(usersTable).all();
+	const users = await db
+		.select({
+			id: usersTable.id,
+			displayId: usersTable.displayId,
+			name: usersTable.name,
+			createdAt: usersTable.createdAt,
+		})
+		.from(usersTable)
+		.all();
 	return c.json(users);
 });
 
@@ -49,7 +65,12 @@ app.get("/users/:id", async (c) => {
 
 	try {
 		const user = await db
-			.select()
+			.select({
+				id: usersTable.id,
+				displayId: usersTable.displayId,
+				name: usersTable.name,
+				createdAt: usersTable.createdAt,
+			})
 			.from(usersTable)
 			.where(eq(usersTable.id, id))
 			.get();
@@ -176,5 +197,44 @@ app.get("/questions", async (c) => {
 		return c.json({ error: "Failed to fetch questions" }, 500);
 	}
 });
+
+app.post(
+	"/questions/:id/answers",
+	vValidator("json", createAnswerSchema),
+	async (c) => {
+		const { id: questionId } = c.req.param();
+		const { content } = c.req.valid("json");
+
+		const db = drizzle(c.env.DB);
+
+		const question = await db
+			.select()
+			.from(questionsTable)
+			.where(eq(questionsTable.id, questionId))
+			.get();
+
+		if (!question) {
+			return c.json({ error: "Question not found" }, 404);
+		}
+
+		try {
+			const result = await db
+				.insert(answersTable)
+				.values({
+					id: crypto.randomUUID(),
+					questionId: questionId,
+					content,
+					answeredAt: new Date(),
+					updatedAt: new Date(),
+				})
+				.returning();
+
+			return c.json(result, 201);
+		} catch (e) {
+			console.error(e);
+			return c.json({ error: "Failed to post answer" }, 500);
+		}
+	},
+);
 
 export default { fetch: app.fetch };
