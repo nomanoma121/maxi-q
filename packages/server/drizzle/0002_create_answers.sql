@@ -1,8 +1,8 @@
 CREATE TABLE answers (
     answer_id TEXT PRIMARY KEY,
-    post_id TEXT NOT NULL,
+    question_id TEXT NOT NULL,
     content TEXT NOT NULL,
     answered_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES questions(id)
+    FOREIGN KEY (question_id) REFERENCES questions(id)
 );
