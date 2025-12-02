@@ -5,6 +5,9 @@
     "compatibility_flags": [
         "nodejs_compat"
     ],
+    "vars": {
+        "JWT_SECRET": "v4VHzHj3MCgB9K+qf2OrnZE+ml4zKv0ROZGw8VB+pD8="
+    },
     "d1_databases": [
         {
             "binding": "DB",
@@ -14,6 +17,7 @@
         }
     ]
 }
+
 
 
 // /**
