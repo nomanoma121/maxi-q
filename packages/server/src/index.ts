@@ -1,5 +1,5 @@
 import { vValidator } from "@hono/valibot-validator";
-import { compare, hash } from "bcryptjs";
+import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
@@ -13,14 +13,11 @@ import {
 } from "./db/schema";
 import { authMiddleware } from "./middlewares/auth";
 
-export interface Env {
-	DB: D1Database;
-	JWT_SECRET: string; //JWTシークレットキーは server/wrangler.json で設定
-}
+const EXPIRED_DURATION=60 * 60 * 48;
 
 export const app = new Hono<{ Bindings: Env }>({});
 
-const createUserSchema = v.object({
+const registerSchema = v.object({
 	displayId: v.string(),
 	name: v.string(),
 	email: v.pipe(v.string(), v.email()),
@@ -80,12 +77,12 @@ app.get("/users/:id", async (c) => {
 	}
 });
 
-app.post("/api/register", vValidator("json", createUserSchema), async (c) => {
+app.post("/api/register", vValidator("json", registerSchema), async (c) => {
 	const { displayId, name, email, password } = c.req.valid("json");
 	const db = drizzle(c.env.DB);
 
 	try {
-		const hashedPassword = await hash(password, 10);
+		const hashedPassword = await bcrypt.hash(password, 10);
 
 		const result = await db
 			.insert(usersTable)
@@ -110,7 +107,6 @@ app.post("/login", vValidator("json", loginUserSchema), async (c) => {
 	const db = drizzle(c.env.DB);
 
 	try {
-		// メールアドレスでユーザーを検索
 		const user = await db
 			.select()
 			.from(usersTable)
@@ -121,17 +117,15 @@ app.post("/login", vValidator("json", loginUserSchema), async (c) => {
 			return c.json({ error: "Invalid email or password" }, 401);
 		}
 
-		// パスワードを照合（compare を使う）
-		const isValid = await compare(password, user.passwordHash);
+		const isValid = await bcrypt.compare(password, user.passwordHash);
 
 		if (!isValid) {
 			return c.json({ error: "Invalid email or password" }, 401);
 		}
 
-		// JWTペイロード作成
 		const payload = {
 			sub: user.id,
-			exp: Math.floor(Date.now() / 1000) + 60 * 60 * 48, // 48時間
+			exp: Math.floor(Date.now() / 1000) + EXPIRED_DURATION,
 		};
 
 		if (!c.env.JWT_SECRET) {
@@ -139,7 +133,6 @@ app.post("/login", vValidator("json", loginUserSchema), async (c) => {
 			return c.json({ error: "Internal Server Error" }, 500);
 		}
 
-		// トークンの発行
 		const token = await sign(payload, c.env.JWT_SECRET);
 
 		return c.json({
