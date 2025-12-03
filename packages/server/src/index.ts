@@ -24,12 +24,11 @@ const createUserSchema = v.object({
 	displayId: v.string(),
 	name: v.string(),
 	email: v.pipe(v.string(), v.email()),
-	password: v.string(),
+	password: v.pipe(v.string(), v.minLength(8)),
 });
-
 const loginUserSchema = v.object({
 	email: v.pipe(v.string(), v.email()),
-	password: v.string(),
+	password: v.pipe(v.string(), v.minLength(8)),
 });
 
 const createQuestionSchema = v.object({
@@ -85,7 +84,6 @@ app.post("/api/register", vValidator("json", createUserSchema), async (c) => {
 	const { displayId, name, email, password } = c.req.valid("json");
 	const db = drizzle(c.env.DB);
 
-	// TODO: passwordのハッシュ化を行う
 	try {
 		const hashedPassword = await hash(password, 10);
 
@@ -133,9 +131,7 @@ app.post("/login", vValidator("json", loginUserSchema), async (c) => {
 		// JWTペイロード作成
 		const payload = {
 			sub: user.id,
-			name: user.name,
-			displayId: user.displayId,
-			exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24時間
+			exp: Math.floor(Date.now() / 1000) + 60 * 60 * 48, // 48時間
 		};
 
 		if (!c.env.JWT_SECRET) {
@@ -148,12 +144,6 @@ app.post("/login", vValidator("json", loginUserSchema), async (c) => {
 
 		return c.json({
 			token,
-			user: {
-				id: user.id,
-				name: user.name,
-				displayId: user.displayId,
-				email: user.email,
-			},
 		});
 	} catch (e) {
 		console.error(e);

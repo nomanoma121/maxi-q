@@ -13,10 +13,6 @@ export const authMiddleware = async (c: Context, next: Next) => {
 	try {
 		const payload = await verify(token, c.env.JWT_SECRET);
 
-		if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-			return c.json({ error: "Token expired" }, 401);
-		}
-
 		c.set("userId", payload.sub);
 		await next();
 	} catch (err) {
