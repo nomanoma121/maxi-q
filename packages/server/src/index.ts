@@ -1,27 +1,31 @@
 import { vValidator } from "@hono/valibot-validator";
-import { hash } from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { sign } from "hono/jwt";
 import * as v from "valibot";
 import {
 	answers as answersTable,
 	questions as questionsTable,
 	users as usersTable,
 } from "./db/schema";
+import { authMiddleware } from "./middlewares/auth";
 
-export interface Env {
-	DB: D1Database;
-}
+const EXPIRED_DURATION = 60 * 60 * 48;
 
 export const app = new Hono<{ Bindings: Env }>({});
 
-const createUserSchema = v.object({
+const registerSchema = v.object({
 	displayId: v.string(),
 	name: v.string(),
 	email: v.pipe(v.string(), v.email()),
-	password: v.string(),
+	password: v.pipe(v.string(), v.minLength(8)),
+});
+const loginUserSchema = v.object({
+	email: v.pipe(v.string(), v.email()),
+	password: v.pipe(v.string(), v.minLength(8)),
 });
 
 const createQuestionSchema = v.object({
@@ -73,13 +77,12 @@ app.get("/users/:id", async (c) => {
 	}
 });
 
-app.post("/api/register", vValidator("json", createUserSchema), async (c) => {
+app.post("/api/register", vValidator("json", registerSchema), async (c) => {
 	const { displayId, name, email, password } = c.req.valid("json");
 	const db = drizzle(c.env.DB);
 
-	// TODO: passwordのハッシュ化を行う
 	try {
-		const hashedPassword = await hash(password, 10);
+		const hashedPassword = await bcrypt.hash(password, 10);
 
 		const result = await db
 			.insert(usersTable)
@@ -98,6 +101,50 @@ app.post("/api/register", vValidator("json", createUserSchema), async (c) => {
 		return c.json({ error: "Failed to create user" }, 500);
 	}
 });
+
+app.post("/login", vValidator("json", loginUserSchema), async (c) => {
+	const { email, password } = c.req.valid("json");
+	const db = drizzle(c.env.DB);
+
+	try {
+		const user = await db
+			.select()
+			.from(usersTable)
+			.where(eq(usersTable.email, email))
+			.get();
+
+		if (!user) {
+			return c.json({ error: "Invalid email or password" }, 401);
+		}
+
+		const isValid = await bcrypt.compare(password, user.passwordHash);
+
+		if (!isValid) {
+			return c.json({ error: "Invalid email or password" }, 401);
+		}
+
+		const payload = {
+			sub: user.id,
+			exp: Math.floor(Date.now() / 1000) + EXPIRED_DURATION,
+		};
+
+		if (!c.env.JWT_SECRET) {
+			console.error("JWT_SECRET is not set");
+			return c.json({ error: "Internal Server Error" }, 500);
+		}
+
+		const token = await sign(payload, c.env.JWT_SECRET);
+
+		return c.json({
+			token,
+		});
+	} catch (e) {
+		console.error(e);
+		return c.json({ error: "Login failed" }, 500);
+	}
+});
+
+app.use("/questions/*", authMiddleware);
 
 app.post("/questions", vValidator("json", createQuestionSchema), async (c) => {
 	const { title, content } = c.req.valid("json");

@@ -36,7 +36,7 @@ export default function Home() {
 		};
 
 		try {
-			const response = await serverFetch("/users", {
+			const response = await serverFetch("/api/register", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
