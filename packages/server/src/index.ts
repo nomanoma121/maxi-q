@@ -156,7 +156,6 @@ app.get("/questions/:id", async (c) => {
 	}
 });
 
-
 app.get("/questions/:id/answers", async (c) => {
 	const { id: questionId } = c.req.param();
 	const db = drizzle(c.env.DB);

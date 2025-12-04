@@ -1,5 +1,5 @@
-import { usePost } from "~/utils/post";
 import type { CreateQuestionParams } from "~/types/question";
+import { usePost } from "~/utils/post";
 
 export function usePostQuestion() {
 	const { post } = usePost();
