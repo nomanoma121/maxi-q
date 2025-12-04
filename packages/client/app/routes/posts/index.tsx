@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { css } from "styled-system/css";
-import { serverFetch } from "~/utils/fetch";
-import { usePost } from "../../hooks/use-post";
-import type { Question } from "~/types/question";
 import type { Answer } from "~/types/answer";
+import type { Question } from "~/types/question";
+import { serverFetch } from "~/utils/fetch";
 import ErrorMessage from "../../components/ErrorMessage";
+import { usePost } from "../../hooks/use-post";
 
 export default function PostDetail() {
 	const { id } = useParams();
@@ -80,10 +80,7 @@ export default function PostDetail() {
 	// エラー UI
 	if (error) {
 		return (
-			<ErrorMessage
-				message={error}
-				onRetry={() => window.location.reload()}
-			/>
+			<ErrorMessage message={error} onRetry={() => window.location.reload()} />
 		);
 	}
 
@@ -95,7 +92,6 @@ export default function PostDetail() {
 				padding: "16px",
 			})}
 		>
-
 			{question && (
 				<div
 					className={css({
@@ -222,4 +218,3 @@ export default function PostDetail() {
 		</div>
 	);
 }
-

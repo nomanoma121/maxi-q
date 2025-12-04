@@ -1,8 +1,8 @@
 export type CreateAnswerParams = {
-    content: string;
+	content: string;
 };
 
-export type Answer =  {
+export type Answer = {
 	id: string;
 	content: string;
 	answeredAt: string;
