@@ -6,7 +6,7 @@ import { serverFetch } from "~/utils/fetch";
 
 export function usePost() {
 	const post = useCallback(
-		async <T = any>(
+		async <T = unknown>(
 			url: string,
 			body: object,
 		): Promise<{ ok: boolean; data: T | null }> => {

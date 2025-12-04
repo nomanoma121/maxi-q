@@ -27,6 +27,7 @@ export default function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
 
 			{onRetry && (
 				<button
+					type="button"
 					onClick={onRetry}
 					className={css({
 						padding: "12px 24px",
