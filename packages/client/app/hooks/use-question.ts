@@ -3,14 +3,14 @@ import type { CreateQuestionParams } from "~/types/question";
 import { postRequest, serverFetch } from "~/utils/fetch";
 import type { Question } from "../types/question";
 
-export function usePostQuestion() {
-	const postQuestion = async (
+export function postQuestion() {
+	const post = async (
 		params: CreateQuestionParams,
 	): Promise<Question> => {
 		return await postRequest<Question>("/questions", params);
 	};
 
-	return { postQuestion };
+	return { post };
 }
 
 export function useQuestion(questionId?: string) {

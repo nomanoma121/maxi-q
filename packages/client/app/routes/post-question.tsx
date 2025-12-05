@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import { css } from "styled-system/css";
-import { usePostQuestion } from "../hooks/use-question";
+import { postQuestion } from "../hooks/use-question";
 
 export default function QuestionsPage() {
 	const formRef = useRef<HTMLFormElement>(null);
-	const { postQuestion } = usePostQuestion();
+	const { post } = postQuestion();
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,7 +22,7 @@ export default function QuestionsPage() {
 		setIsSubmitting(true);
 
 		try {
-			const newQuestion = await postQuestion({ title, content });
+			const newQuestion = await post({ title, content });
 
 			console.log("Question created!", newQuestion);
 

@@ -3,16 +3,19 @@ import { useParams } from "react-router-dom";
 import { css } from "styled-system/css";
 import { useAnswers } from "~/hooks/use-answer";
 import { useQuestion } from "~/hooks/use-question";
-import ErrorMessage from "../../components/error-message";
+import ErrorMessage from "~/components/error-message";
 
 export default function QuestionDetailPage() {
 	const { id } = useParams<{ id: string }>();
+
+	if (!id) {
+		return <ErrorMessage message="Question ID is missing" />;
+	}
 
 	const {
 		question,
 		isLoading: questionLoading,
 		error: questionError,
-		refetch: refetchQuestion,
 	} = useQuestion(id);
 
 	const {
@@ -21,16 +24,9 @@ export default function QuestionDetailPage() {
 		error: answersError,
 		isPending: submitting,
 		submitAnswer,
-		refetch: refetchAnswers,
 	} = useAnswers(id);
 
 	const [answerContent, setAnswerContent] = useState("");
-
-	// 初回ロード
-	useEffect(() => {
-		refetchQuestion();
-		refetchAnswers();
-	}, [refetchQuestion, refetchAnswers]);
 
 	if (questionLoading) return <div>Loading question...</div>;
 	if (questionError) return <ErrorMessage message={questionError.message} />;
@@ -126,7 +122,9 @@ export default function QuestionDetailPage() {
 					e.preventDefault();
 					if (!answerContent.trim()) return;
 					await submitAnswer(answerContent);
-					setAnswerContent("");
+					if (!answersError) {
+						setAnswerContent("");
+					}
 				}}
 				className={css({
 					display: "flex",
