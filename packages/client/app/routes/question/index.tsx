@@ -22,11 +22,11 @@ export default function QuestionDetailPage() {
 		submitAnswer,
 	} = useAnswers(id);
 
+	const [answerContent, setAnswerContent] = useState("");
+
 	if (!id) {
 		return <ErrorMessage message="Question ID is missing" />;
 	}
-
-	const [answerContent, setAnswerContent] = useState("");
 
 	if (questionLoading) return <div>Loading question...</div>;
 	if (questionError) return <ErrorMessage message={questionError.message} />;
