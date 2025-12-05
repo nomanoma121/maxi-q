@@ -4,9 +4,7 @@ import { postRequest, serverFetch } from "~/utils/fetch";
 import type { Question } from "../types/question";
 
 export function postQuestion() {
-	const post = async (
-		params: CreateQuestionParams,
-	): Promise<Question> => {
+	const post = async (params: CreateQuestionParams): Promise<Question> => {
 		return await postRequest<Question>("/questions", params);
 	};
 
