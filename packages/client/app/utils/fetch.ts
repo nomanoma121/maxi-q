@@ -15,3 +15,14 @@ export const serverFetch = (url: string, options: RequestInit = {}) => {
 		},
 	});
 };
+
+export const postFetch = async <T = unknown>(url: string, body: object): Promise<T> => {
+  const res = await serverFetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) throw new Error("POST failed");
+  return res.json() as Promise<T>;
+};

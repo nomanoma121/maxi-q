@@ -1,33 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { css } from "styled-system/css";
-import { useQuestionPage } from "~/hooks/use-question-pages";
+import { useQuestion } from "~/hooks/use-question";
+import { useAnswers } from "~/hooks/use-answer";
 import ErrorMessage from "../../components/error-message";
 
 export default function QuestionDetailPage() {
-	const { id } = useParams();
+	const { id } = useParams<{ id: string }>();
 
-	const {
-		question,
-		answers,
-		answerContent,
-		setAnswerContent,
-		loading,
-		submitting,
-		error,
-		answersError,
-		fetchAll,
-		submitAnswer,
-	} = useQuestionPage(id);
+	const { question, isLoading: questionLoading, error: questionError, refetch: refetchQuestion } = useQuestion(id);
+	const { answers, isLoading: answersLoading, error: answersError, isPending: submitting, submitAnswer, refetch: refetchAnswers } = useAnswers(id);
 
+	const [answerContent, setAnswerContent] = useState("");
+
+	// 初回ロード
 	useEffect(() => {
-		fetchAll();
-	}, [fetchAll]);
+		refetchQuestion();
+		refetchAnswers();
+	}, [refetchQuestion, refetchAnswers]);
 
-	if (loading) return <div>Loading...</div>;
-
-	// 質問取得のエラー
-	if (error) return <ErrorMessage message={error} />;
+	if (questionLoading) return <div>Loading question...</div>;
+	if (questionError) return <ErrorMessage message={questionError.message} />;
 
 	return (
 		<div
@@ -76,17 +69,7 @@ export default function QuestionDetailPage() {
 				Answers
 			</h2>
 
-			{answersError && (
-				<div
-					className={css({
-						color: "red",
-						marginBottom: "12px",
-						fontSize: "14px",
-					})}
-				>
-					{answersError}
-				</div>
-			)}
+			{answersError && <ErrorMessage message={answersError.message} />}
 
 			<div
 				className={css({
@@ -96,7 +79,9 @@ export default function QuestionDetailPage() {
 					marginBottom: "24px",
 				})}
 			>
-				{answers.length === 0 ? (
+				{answersLoading ? (
+					<p>Loading answers...</p>
+				) : answers.length === 0 ? (
 					<p>No answers yet.</p>
 				) : (
 					answers.map((ans) => (
@@ -124,7 +109,12 @@ export default function QuestionDetailPage() {
 			</div>
 
 			<form
-				onSubmit={submitAnswer}
+				onSubmit={async (e) => {
+					e.preventDefault();
+					if (!answerContent.trim()) return;
+					await submitAnswer(answerContent);
+					setAnswerContent("");
+				}}
 				className={css({
 					display: "flex",
 					flexDirection: "column",

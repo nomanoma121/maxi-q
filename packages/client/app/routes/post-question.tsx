@@ -11,25 +11,27 @@ export default function QuestionsPage() {
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
+		if (isSubmitting) return;
+
 		const formData = new FormData(e.currentTarget);
 		const title = formData.get("title");
 		const content = formData.get("content");
 
 		if (typeof title !== "string" || typeof content !== "string") return;
-		if (isSubmitting) return;
 
 		setIsSubmitting(true);
 
-		const { ok } = await postQuestion({ title, content });
+		try {
+			const newQuestion = await postQuestion({ title, content });
 
-		if (!ok) {
-			console.error("質問投稿に失敗しました");
-		} else {
-			console.log("Question created!");
+			console.log("Question created!", newQuestion);
+
 			formRef.current?.reset();
+		} catch (err) {
+			console.error("質問投稿に失敗しました", err);
+		} finally {
+			setIsSubmitting(false);
 		}
-
-		setIsSubmitting(false);
 	};
 
 	return (
@@ -41,25 +43,15 @@ export default function QuestionsPage() {
 				fontSize: "16px",
 			})}
 		>
-			<h1 className={css({ fontSize: "24px", marginBottom: "16px" })}>
-				質問投稿
-			</h1>
+			<h1 className={css({ fontSize: "24px", marginBottom: "16px" })}>質問投稿</h1>
 
 			<form
 				ref={formRef}
 				onSubmit={handleSubmit}
-				className={css({
-					display: "flex",
-					flexDirection: "column",
-					gap: "16px",
-				})}
+				className={css({ display: "flex", flexDirection: "column", gap: "16px" })}
 			>
 				<label
-					className={css({
-						display: "flex",
-						flexDirection: "column",
-						gap: "4px",
-					})}
+					className={css({ display: "flex", flexDirection: "column", gap: "4px" })}
 				>
 					タイトル:
 					<input
@@ -67,21 +59,13 @@ export default function QuestionsPage() {
 						name="title"
 						required
 						maxLength={100}
-						className={css({
-							border: "1px solid #000",
-							padding: "8px",
-							borderRadius: "4px",
-						})}
+						className={css({ border: "1px solid #000", padding: "8px", borderRadius: "4px" })}
 					/>
 				</label>
 
 				<label
 					htmlFor="content"
-					className={css({
-						display: "flex",
-						flexDirection: "column",
-						gap: "4px",
-					})}
+					className={css({ display: "flex", flexDirection: "column", gap: "4px" })}
 				>
 					内容:
 					<textarea
@@ -100,16 +84,17 @@ export default function QuestionsPage() {
 
 				<button
 					type="submit"
+					disabled={isSubmitting}
 					className={css({
 						padding: "10px 16px",
-						background: "#333",
+						background: isSubmitting ? "#999" : "#333",
 						color: "white",
 						borderRadius: "4px",
-						cursor: "pointer",
-						_hover: { background: "#555" },
+						cursor: isSubmitting ? "not-allowed" : "pointer",
+						_hover: { background: isSubmitting ? "#999" : "#555" },
 					})}
 				>
-					質問を投稿
+					{isSubmitting ? "投稿中..." : "質問を投稿"}
 				</button>
 			</form>
 		</div>
