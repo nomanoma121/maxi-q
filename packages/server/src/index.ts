@@ -16,10 +16,10 @@ import { authMiddleware } from "./middlewares/auth";
 const EXPIRED_DURATION = 60 * 60 * 48;
 
 export const app = new Hono<{
-  Bindings: Env;
-  Variables: {
-    userId: string;
-  };
+	Bindings: Env;
+	Variables: {
+		userId: string;
+	};
 }>({});
 
 const registerSchema = v.object({
