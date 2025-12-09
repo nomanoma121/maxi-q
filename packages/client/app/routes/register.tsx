@@ -1,12 +1,11 @@
-import { css } from "styled-system/css";
 import { useCallback, useEffect, useState } from "react";
+import { css } from "styled-system/css";
 import type { CreateUserParams, User } from "~/types/user";
 import { serverFetch } from "~/utils/fetch";
 
-
 export default function RegisterPage() {
-const [users, setUsers] = useState<User[]>([]);
-const fetchUsers = useCallback(async () => {
+	const [_users, setUsers] = useState<User[]>([]);
+	const fetchUsers = useCallback(async () => {
 		try {
 			const response = await serverFetch("/users");
 			if (!response.ok) {
@@ -19,7 +18,7 @@ const fetchUsers = useCallback(async () => {
 		}
 	}, []);
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const userParams: CreateUserParams = {
@@ -48,28 +47,30 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		}
 	};
 
-	return <div
-			className={css({
-			})}
-			><div
-			className={css({
-				margin: "100px auto",
-				maxWidth: "700px",
-				display: "flex",
-				flexDirection: "column",
-				justifyContent: "center",
-				alignItems: "center",
-				gap: "40px",
-				})}>
+	useEffect(() => {
+		fetchUsers();
+	}, [fetchUsers]);
 
+	return (
+		<div className={css({})}>
+			<div
+				className={css({
+					margin: "100px auto",
+					maxWidth: "700px",
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "center",
+					alignItems: "center",
+					gap: "40px",
+				})}
+			>
 				<form
 					onSubmit={(e) => handleSubmit(e)}
 					className={css({
-						 display: "flex",
-						 flexDirection: "column",
-						 gap: "8px",
-						 width: "400px",
-
+						display: "flex",
+						flexDirection: "column",
+						gap: "8px",
+						width: "400px",
 					})}
 				>
 					<h2
@@ -78,7 +79,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 							fontWeight: "bold",
 							textAlign: "center",
 						})}
-					>新規作成</h2>
+					>
+						新規作成
+					</h2>
 					<div>ユーザーID</div>
 					<input
 						type="text"
@@ -124,21 +127,22 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 							border: "1px solid #ccc",
 						})}
 					/>
-
 				</form>
-					<button
-						type="submit"
-						className={css({
-							width: "400px",
-							padding: "10px",
-							borderRadius: "4px",
-							border: "none",
-							backgroundColor: "green.500",
-							color: "white",
-							cursor: "pointer",
-						})}
-					>
-						作成
-					</button>
-			</div></div>;
+				<button
+					type="submit"
+					className={css({
+						width: "400px",
+						padding: "10px",
+						borderRadius: "4px",
+						border: "none",
+						backgroundColor: "green.500",
+						color: "white",
+						cursor: "pointer",
+					})}
+				>
+					作成
+				</button>
+			</div>
+		</div>
+	);
 }

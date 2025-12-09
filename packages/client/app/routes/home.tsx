@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { css } from "styled-system/css";
-import type { CreateUserParams, User } from "~/types/user";
-import { serverFetch } from "~/utils/fetch";
+import type { User } from "~/types/user";
 
 // export function meta({}: Route.MetaArgs) {
 //   return [
@@ -11,52 +10,7 @@ import { serverFetch } from "~/utils/fetch";
 // }
 
 export default function Home() {
-	const [users, setUsers] = useState<User[]>([]);
-	const fetchUsers = useCallback(async () => {
-		try {
-			const response = await serverFetch("/users");
-			if (!response.ok) {
-				throw new Error("Failed to fetch users");
-			}
-			const users = await response.json();
-			setUsers(users);
-		} catch (error) {
-			console.error("Error fetching users:", error);
-		}
-	}, []);
-
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
-		const userParams: CreateUserParams = {
-			displayId: formData.get("displayId") as string,
-			name: formData.get("name") as string,
-			email: formData.get("email") as string,
-			password: formData.get("password") as string,
-		};
-
-		try {
-			const response = await serverFetch("/users", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(userParams),
-			});
-			if (!response.ok) {
-				throw new Error("Failed to create user");
-			}
-			const newUser = await response.json();
-			console.log("User created:", newUser);
-			await fetchUsers();
-		} catch (error) {
-			console.error("Error creating user:", error);
-		}
-	};
-
-	useEffect(() => {
-		fetchUsers();
-	}, [fetchUsers]);
+	const [users, _setUsers] = useState<User[]>([]);
 
 	return (
 		<div>
