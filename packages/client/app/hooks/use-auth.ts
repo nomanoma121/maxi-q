@@ -8,13 +8,9 @@ export function useAuth() {
 	const [error, setError] = useState<Error | null>(null);
 
 	useEffect(() => {
-		const controller = new AbortController();
-
 		async function fetchMe() {
 			try {
-				const res = await serverFetch("/auth/me", {
-					signal: controller.signal,
-				});
+				const res = await serverFetch("/auth/me");
 
 				if (!res.ok) {
 					throw new Error("Unauthorized");
@@ -23,7 +19,6 @@ export function useAuth() {
 				const data: AuthUser = await res.json();
 				setUser(data);
 			} catch (e) {
-				if (controller.signal.aborted) return; // 中断された場合は何もしない
 				console.error(e);
 				setError(e instanceof Error ? e : new Error("Unknown error"));
 				setUser(null);
@@ -33,8 +28,6 @@ export function useAuth() {
 		}
 
 		fetchMe();
-
-		return () => controller.abort();
 	}, []);
 
 	return { user, isLoading, error };

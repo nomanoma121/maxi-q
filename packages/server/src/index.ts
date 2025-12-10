@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { createFactory } from "hono/factory";
 import { jwt, sign } from "hono/jwt";
 import * as v from "valibot";
 import {
@@ -16,6 +17,10 @@ import { authMiddleware } from "./middlewares/auth";
 const EXPIRED_DURATION = 60 * 60 * 48;
 
 export const app = new Hono<{ Bindings: Env }>({});
+
+export type HonoEnv = {
+	Bindings: Env;
+};
 
 const registerSchema = v.object({
 	displayId: v.string(),
@@ -77,12 +82,15 @@ app.get("/users/:id", async (c) => {
 	}
 });
 
-app.use("/auth/*", async (c, next) => {
-	const middleware = jwt({ secret: c.env.JWT_SECRET });
-	return middleware(c, next);
+export const factory = createFactory<HonoEnv>();
+
+export const authMeMiddleware = factory.createMiddleware(async (c, next) => {
+	return jwt({
+		secret: c.env.JWT_SECRET,
+	})(c, next);
 });
 
-app.get("/auth/me", async (c) => {
+app.get("/auth/me", authMeMiddleware, async (c) => {
 	const db = drizzle(c.env.DB);
 
 	const userId = c.get("jwtPayload").sub as string;
