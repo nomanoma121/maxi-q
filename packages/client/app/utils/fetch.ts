@@ -15,3 +15,26 @@ export const serverFetch = (url: string, options: RequestInit = {}) => {
 		},
 	});
 };
+
+export const postRequest = async <T = unknown>(
+	url: string,
+	body: object,
+): Promise<T> => {
+	const res = await serverFetch(url, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body),
+	});
+
+	if (!res.ok) {
+		let errorMessage: string;
+		try {
+			const errorBody = await res.text();
+			errorMessage = errorBody || res.statusText;
+		} catch {
+			errorMessage = res.statusText;
+		}
+		throw new Error(`POST failed with status ${res.status}: ${errorMessage}`);
+	}
+	return res.json() as Promise<T>;
+};

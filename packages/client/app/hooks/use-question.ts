@@ -1,22 +1,43 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { CreateQuestionParams } from "~/types/question";
-import { serverFetch } from "~/utils/fetch";
+import { postRequest, serverFetch } from "~/utils/fetch";
+import type { Question } from "../types/question";
 
-export function usePostQuestion() {
-	const postQuestion = useCallback(
-		async (params: CreateQuestionParams): Promise<boolean> => {
-			const res = await serverFetch("/questions", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(params),
-			});
+export function postQuestion() {
+	const post = async (params: CreateQuestionParams): Promise<Question> => {
+		return await postRequest<Question>("/questions", params);
+	};
 
-			if (!res.ok) return false;
+	return { post };
+}
 
-			return true;
-		},
-		[],
-	);
+export function useQuestion(questionId?: string) {
+	const [question, setQuestion] = useState<Question | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<Error | null>(null);
 
-	return { postQuestion };
+	const fetchQuestion = useCallback(async () => {
+		if (!questionId) return;
+
+		setIsLoading(true);
+		setError(null);
+
+		try {
+			const res = await serverFetch(`/questions/${questionId}`);
+			if (!res.ok) throw new Error("Failed to fetch question");
+
+			setQuestion(await res.json());
+		} catch (err) {
+			console.error(err);
+			setError(err instanceof Error ? err : new Error("Unknown error"));
+		} finally {
+			setIsLoading(false);
+		}
+	}, [questionId]);
+
+	useEffect(() => {
+		fetchQuestion();
+	}, [fetchQuestion]);
+
+	return { question, isLoading, error, refetch: fetchQuestion };
 }

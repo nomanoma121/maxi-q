@@ -1,40 +1,36 @@
 import { useRef, useState } from "react";
 import { css } from "styled-system/css";
-import { usePostQuestion } from "../hooks/use-question";
+import { postQuestion } from "../hooks/use-question";
 
 export default function QuestionsPage() {
 	const formRef = useRef<HTMLFormElement>(null);
-	const { postQuestion } = usePostQuestion();
+	const { post } = postQuestion();
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
 
+		if (isSubmitting) return;
+
+		const formData = new FormData(e.currentTarget);
 		const title = formData.get("title");
 		const content = formData.get("content");
 
-		if (typeof title !== "string" || typeof content !== "string") {
-			console.error("タイトルまたは内容が不正です");
-			return;
-		}
+		if (typeof title !== "string" || typeof content !== "string") return;
 
-		if (isSubmitting) return;
 		setIsSubmitting(true);
 
 		try {
-			const ok = await postQuestion({ title, content });
+			const newQuestion = await post({ title, content });
 
-			if (!ok) {
-				console.error("質問投稿に失敗しました");
-				return;
-			}
+			console.log("Question created!", newQuestion);
 
-			console.log("Question created!");
 			formRef.current?.reset();
-		} catch (error) {
-			console.error("Error creating question:", error);
+		} catch (err) {
+			console.error("質問投稿に失敗しました", err);
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -106,16 +102,17 @@ export default function QuestionsPage() {
 
 				<button
 					type="submit"
+					disabled={isSubmitting}
 					className={css({
 						padding: "10px 16px",
-						background: "#333",
+						background: isSubmitting ? "#999" : "#333",
 						color: "white",
 						borderRadius: "4px",
-						cursor: "pointer",
-						_hover: { background: "#555" },
+						cursor: isSubmitting ? "not-allowed" : "pointer",
+						_hover: { background: isSubmitting ? "#999" : "#555" },
 					})}
 				>
-					質問を投稿
+					{isSubmitting ? "投稿中..." : "質問を投稿"}
 				</button>
 			</form>
 		</div>

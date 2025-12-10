@@ -17,6 +17,7 @@
 		"publish": true
 	},
 	"devDependencies": {
+		"@types/bcryptjs": "^2.4.2",
 		"drizzle-kit": "^0.31.6",
 		"tsx": "^4.20.6",
 		"typescript": "5.8.3",
@@ -35,6 +36,7 @@
 	},
 	"dependencies": {
 		"@hono/valibot-validator": "^0.5.3",
+		"bcryptjs": "^2.4.3",
 		"dotenv": "^17.2.3",
 		"drizzle-orm": "^0.44.7",
 		"hono": "^4.10.5",
