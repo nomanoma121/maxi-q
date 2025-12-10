@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { css } from "styled-system/css";
 import { postRequest } from "../utils/fetch";
 
@@ -7,6 +8,7 @@ export default function LoginPage() {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+  	const navigate = useNavigate();
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -20,7 +22,7 @@ export default function LoginPage() {
 			});
 			localStorage.setItem("token", data.token);
 
-			window.location.href = "/questions";
+			navigate("/questions");
 		} catch (err: unknown) {
 			if (err instanceof Error) {
 				setError(err.message);
