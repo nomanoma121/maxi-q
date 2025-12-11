@@ -11,11 +11,22 @@ import {
 	questions as questionsTable,
 	users as usersTable,
 } from "./db/schema";
-import { authMiddleware } from "./middlewares/auth";
+import { authMiddleware } from "./middleware/auth";
 
 const EXPIRED_DURATION = 60 * 60 * 48;
 
-export const app = new Hono<{ Bindings: Env }>({});
+type JwtPayload = {
+	sub: string;
+};
+
+export type HonoEnv = {
+	Bindings: Env;
+	Variables: {
+		jwtPayload: JwtPayload;
+	};
+};
+
+export const app = new Hono<HonoEnv>();
 
 const registerSchema = v.object({
 	displayId: v.string(),
@@ -142,6 +153,29 @@ app.post("/login", vValidator("json", loginUserSchema), async (c) => {
 		console.error(e);
 		return c.json({ error: "Login failed" }, 500);
 	}
+});
+
+app.get("/auth/me", authMiddleware, async (c) => {
+	const db = drizzle(c.env.DB);
+
+	const userId = c.get("jwtPayload").sub;
+
+	const user = await db
+		.select({
+			id: usersTable.id,
+			displayId: usersTable.displayId,
+			name: usersTable.name,
+			createdAt: usersTable.createdAt,
+		})
+		.from(usersTable)
+		.where(eq(usersTable.id, userId))
+		.get();
+
+	if (!user) {
+		return c.json({ error: "User not found" }, 404);
+	}
+
+	return c.json(user);
 });
 
 app.use("/questions/*", authMiddleware);

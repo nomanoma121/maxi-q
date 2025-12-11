@@ -12,3 +12,10 @@ export type User = {
 	email: string;
 	createdAt: Date;
 };
+
+export type AuthUser = {
+	id: string;
+	displayId: string;
+	name: string;
+	createdAt: Date;
+};
